@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XAU/USD — Brief Vocal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--gold:#C9A84C;--gold-dim:#7a6230;--bg:#09090b;--surface:#111114;--surface2:#18181c;--border:#27272d;--text:#e8e6df;--text-muted:#64625c;--green:#3dba7e;--red:#e05252;--amber:#e8a43a;}
+  *{margin:0;padding:0;box-sizing:border-box;}html{-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+  body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,.07),transparent);pointer-events:none;z-index:0;}
+  .wrap{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:28px 18px 64px;}
+
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#c9a84c,#7a5c20);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 18px rgba(201,168,76,.3);}
+  .brand-name{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+  .date-chip{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;}
+
+  .vcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+  .vcard-title{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+  .vrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .vinput{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px 12px;outline:none;}
+  .vinput:focus{border-color:var(--gold-dim);}
+  .vsave{background:var(--gold);color:#09090b;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:8px 14px;cursor:pointer;white-space:nowrap;transition:all .2s;}
+  .vsave:hover{background:#dbb85a;}
+  .vsel{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px 12px;outline:none;appearance:none;margin-bottom:8px;}
+  .vsel:focus{border-color:var(--gold-dim);}
+  .vtest{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;padding:8px 14px;cursor:pointer;transition:all .2s;width:100%;}
+  .vtest:hover{border-color:var(--gold-dim);color:var(--gold);}
+  .vinfo{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);}
+  .vinfo b{color:var(--gold);}
+
+  .status{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+  .sdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:blink 2.5s ease-in-out infinite;flex-shrink:0;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .sdot.busy{background:var(--amber);box-shadow:0 0 7px var(--amber);}
+  .stext{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);flex:1;}
+
+  .lbar{width:100%;height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:14px;display:none;}
+  .lbar.on{display:block;}
+  .lfill{height:100%;width:40%;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:sh 1.4s ease-in-out infinite;}
+  @keyframes sh{0%{transform:translateX(-200%)}100%{transform:translateX(400%)}}
+
+  .err{display:none;background:rgba(224,82,82,.08);border:1px solid rgba(224,82,82,.2);border-radius:10px;padding:12px 16px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--red);line-height:1.5;}
+  .err.on{display:block;}
+
+  .nfp{background:linear-gradient(135deg,rgba(232,164,58,.08),transparent);border:1px solid rgba(232,164,58,.25);border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:center;}
+  .nfp-i{font-size:22px;flex-shrink:0;}
+  .nfp-t{font-size:12px;line-height:1.55;}
+  .nfp-t strong{color:var(--amber);display:block;margin-bottom:2px;}
+
+  .player{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:26px 22px 22px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .player::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 60% at 50% 0%,rgba(201,168,76,.05),transparent);pointer-events:none;}
+  .pline{position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5;}
+  .pmeta{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;}
+  .ptitle{font-size:21px;font-weight:800;line-height:1.15;margin-bottom:5px;}
+  .psub{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold-dim);margin-bottom:22px;}
+
+  .wf{display:flex;align-items:center;gap:2px;height:38px;margin-bottom:18px;}
+  .wb{flex:1;border-radius:2px;background:var(--border);transition:height .09s ease,background .3s;}
+  .wf.on .wb{background:var(--gold);}
+
+  .prog-wrap{margin-bottom:18px;}
+  .ptrack{width:100%;height:4px;background:var(--border);border-radius:2px;cursor:pointer;}
+  .pfill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:2px;width:0%;transition:width .2s linear;position:relative;}
+  .pfill::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);}
+  .ptimes{display:flex;justify-content:space-between;margin-top:8px;}
+  .ptime{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);}
+
+  .controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;}
+  .cb{background:none;border:none;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center;border-radius:50%;padding:8px;transition:color .15s,transform .12s,background .15s;}
+  .cb:hover{color:var(--text);background:var(--surface2);}
+  .cb:active{transform:scale(.9);}
+  .cb svg{width:18px;height:18px;}
+  .cb.main{width:60px;height:60px;border-radius:50%;background:var(--gold);color:#09090b;padding:0;box-shadow:0 0 28px rgba(201,168,76,.4);}
+  .cb.main svg{width:24px;height:24px;}
+  .cb.main:hover{background:#dbb85a;}
+  .sw{position:relative;}
+  .sl{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:9px;color:var(--text-muted);white-space:nowrap;}
+
+  .sprow{display:flex;justify-content:center;gap:6px;margin-top:22px;}
+  .sp{font-family:'DM Mono',monospace;font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;transition:all .15s;}
+  .sp.on{background:var(--surface2);border-color:var(--gold-dim);color:var(--gold);}
+
+  .ch{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:9px;cursor:pointer;transition:border-color .2s,background .2s;}
+  .ch:hover{border-color:var(--gold-dim);}
+  .ch.on{border-color:var(--gold);background:var(--surface2);}
+  .ch-hd{display:flex;align-items:center;gap:10px;}
+  .ch-ic{font-size:15px;flex-shrink:0;}
+  .ch-ti{font-size:13px;font-weight:700;flex:1;}
+  .ch-bg{font-family:'DM Mono',monospace;font-size:10px;padding:2px 9px;border-radius:20px;font-weight:500;}
+  .bear{background:rgba(224,82,82,.12);color:var(--red);}
+  .neut{background:rgba(232,164,58,.12);color:var(--amber);}
+  .ch-pv{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-top:9px;line-height:1.6;display:none;}
+  .ch.on .ch-pv{display:block;}
+
+  .zones{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+  .zt{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;}
+  .zr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+  .zr:last-child{border-bottom:none;padding-bottom:0;}
+  .zl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;width:32px;flex-shrink:0;}
+  .zl.r{color:var(--red);}.zl.s{color:var(--green);}.zl.i{color:var(--text-muted);}
+  .zv{font-family:'DM Mono',monospace;font-size:13px;flex:1;}
+  .zc{font-size:10px;color:var(--text-muted);text-align:right;line-height:1.4;}
+  .zd{display:flex;gap:3px;justify-content:flex-end;margin-top:3px;}
+  .zdo{width:5px;height:5px;border-radius:50%;background:var(--border);}.zdo.f{background:var(--gold);}
+
+  .rbtn{width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:.07em;cursor:pointer;transition:all .2s;}
+  .rbtn:hover{border-color:var(--gold-dim);color:var(--gold);}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand"><div class="brand-mark">⊛</div><div class="brand-name">XAU Brief</div></div>
+    <div class="date-chip" id="dc">—</div>
+  </div>
+
+  <!-- Fish Audio config -->
+  <div class="vcard">
+    <div class="vcard-title">Fish Audio TTS · Voix IA</div>
+    <div class="vrow">
+      <input class="vinput" type="password" id="apiKey" placeholder="Clé API Fish Audio…">
+      <button class="vsave" id="saveBtn">Sauver</button>
+    </div>
+    <select class="vsel" id="voiceModel">
+      <option value="54a5170264694bfc8e9ad98df7cde9d4">🇫🇷 Française naturelle (recommandée)</option>
+      <option value="0eb3f74e02964dbaaa72b6c0958cb76c">🇫🇷 Française douce</option>
+      <option value="e5b0ca3f24e14b8a88839e9e6a434cef">🌍 Multilingue premium</option>
+      <option value="ad09b39e7a4d4db9a7f4a1e6ccf3f4cc">🇫🇷 Homme français</option>
+    </select>
+    <button class="vtest" id="testBtn">▶ Tester la voix</button>
+    <div class="vinfo" style="margin-top:8px;" id="vinfo">Fish Audio · <b>voix humaines IA · gratuit</b></div>
+  </div>
+
+  <div class="status"><div class="sdot" id="sdot"></div><div class="stext" id="st">Prêt · Session London</div></div>
+  <div class="lbar" id="lbar"><div class="lfill"></div></div>
+  <div class="err" id="err"></div>
+
+  <div class="nfp">
+    <div class="nfp-i">⚡</div>
+    <div class="nfp-t"><strong>NFP aujourd'hui — 14h30 France</strong>Aucune entrée 30 min avant/après. Fermer avant 14h00.</div>
+  </div>
+
+  <div class="player">
+    <div class="pline"></div>
+    <div class="pmeta">Brief vocal du jour</div>
+    <div class="ptitle">XAU/USD · 5 Juin 2026</div>
+    <div class="psub">Session London · Biais MIXTE — attente NFP</div>
+    <div class="wf" id="wf"></div>
+    <div class="prog-wrap">
+      <div class="ptrack" id="pt"><div class="pfill" id="pf"></div></div>
+      <div class="ptimes"><span class="ptime" id="te">0:00</span><span class="ptime" id="td">—</span></div>
+    </div>
+    <div class="controls">
+      <button class="cb" id="bRst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg></button>
+      <div class="sw"><button class="cb" id="bBk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg></button><span class="sl">-15s</span></div>
+      <button class="cb main" id="bPl">
+        <svg id="iPl" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        <svg id="iPa" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <svg id="iLd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:none;animation:spin .8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </button>
+      <div class="sw"><button class="cb" id="bFw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button><span class="sl">+15s</span></div>
+      <button class="cb" id="bSt"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg></button>
+    </div>
+    <div class="sprow">
+      <button class="sp" data-r="0.8">0.8×</button>
+      <button class="sp on" data-r="1">1×</button>
+      <button class="sp" data-r="1.2">1.2×</button>
+      <button class="sp" data-r="1.5">1.5×</button>
+    </div>
+  </div>
+
+  <div id="chList"></div>
+
+  <div class="zones">
+    <div class="zt">Zones clés · Consensus 5 analystes</div>
+    <div class="zr"><div class="zl r">R2</div><div class="zv">4515</div><div class="zc">résistance CT<div class="zd"><div class="zdo f"></div><div class="zdo f"></div><div class="zdo f"></div><div class="zdo"></div></div></div></div>
+    <div class="zr"><div class="zl r">R1</div><div class="zv">4480–4490</div><div class="zc">supply·Fib 0.5·OB<div class="zd"><div class="zdo f"></div><div class="zdo f"></div><div class="zdo f"></div><div class="zdo f"></div></div></div></div>
+    <div class="zr"><div class="zl s">S1</div><div class="zv">4440–4455</div><div class="zc">demande CT<div class="zd"><div class="zdo f"></div><div class="zdo f"></div><div class="zdo f"></div><div class="zdo"></div></div></div></div>
+    <div class="zr"><div class="zl s">S2</div><div class="zv">4424–4430</div><div class="zc">double creux·MA200<div class="zd"><div class="zdo f"></div><div class="zdo f"></div><div class="zdo f"></div><div class="zdo f"></div></div></div></div>
+    <div class="zr"><div class="zl i">INV</div><div class="zv">4400</div><div class="zc">invalidation daily</div></div>
+  </div>
+  <button class="rbtn" id="rbtn">↻ Actualiser · auto toutes les 10 min</button>
+</div>
+
+<script>
+// ── CHAPTERS ──
+const CHAPTERS = [
+  {icon:'📅',title:'Contexte du jour',badge:'neut',bl:'NFP',
+   pv:'Vendredi 5 juin, clôture hebdomadaire. NFP à 14h30 — évitement obligatoire.',
+   tx:`Bonjour. C'est vendredi 5 juin 2026. Session London, clôture hebdomadaire pour l'or. Point critique : les données NFP américaines sortent aujourd'hui à 14 heures 30 heure de Paris. Aucune entrée 30 minutes avant ni après. La volatilité sera extrême. Le prix évolue dans un range de compression entre 4440 et 4490.`},
+  {icon:'🧭',title:'Biais directionnel',badge:'neut',bl:'MIXTE',
+   pv:'3 bearish sur rebond, 1 bullish, 1 neutre. Résistance 4490 tient.',
+   tx:`Biais du jour : mixte, légère dominante baissière. Jun Daily Forex vend la zone 4480 à 4490, stop 4516, cible 4420. Olinvest surveille la même zone de supply. Gold Trend Master vend entre 4480 et 4500 ou achète sur 4440 à 4455. Swing Trade Concept est haussier vers 4550. Arthur Davies neutre à baissier avec double creux tactique sur 4430. La pression vendeuse domine au-dessus de 4490.`},
+  {icon:'🎯',title:'Niveaux clés',badge:'bear',bl:'SELL ZONE',
+   pv:'R1 : 4480–4490 prioritaire. S2 : 4424–4430 plancher. INV : 4400.',
+   tx:`Résistance R1 entre 4480 et 4490 : zone de supply, confluente avec Fibonacci 50 pourcent et order block. Résistance R2 à 4515. Support S1 entre 4440 et 4455 : demande court terme. Support critique S2 entre 4424 et 4430 : double creux sur horaire, moyenne mobile 200 jours. Invalidation à 4400 : cassure daily close vise 4375.`},
+  {icon:'⚡',title:'Scénarios du jour',badge:'bear',bl:'PRIORITÉ',
+   pv:'A : rebond 4480–4490 → short M5. B : drop 4430–4440 → long confirmé.',
+   tx:`Scénario A prioritaire baissier : rebond vers 4480 à 4490, setup short en M5, MACD baissier H1 confirmé, stop 4516, cible 4420. Scénario B haussier : chute vers 4430 à 4440 avec CHoCH ou BOS sur M5, long vers 4504. Fermer avant 14 heures ou attendre post NFP vers 15h30.`},
+  {icon:'🌐',title:'Contexte macro',badge:'neut',bl:'NFP KEY',
+   pv:'NFP faible → USD baisse → or 4550+. NFP fort → continuation bear vers 4375.',
+   tx:`NFP aujourd'hui à 14h30. Si créations d'emplois inférieures à 50 000 ou chômage en hausse, le dollar plonge et l'or vise 4550 à 4580. Si NFP fort, continuation baissière vers 4400 puis 4375. Bollinger bands en contraction sur 4 heures : expansion de volatilité imminente. Bonne session.`}
+];
+const FULL = CHAPTERS.map(c=>c.tx).join(' ');
+
+// ── STATE ──
+let apiKey = '';
+let voiceId = '54a5170264694bfc8e9ad98df7cde9d4';
+let audioEl = null;
+let playing = false;
+let rate = 1;
+let waveAnim = null;
+let actCh = -1;
+let cachedUrl = null; // cache audio URL for current brief
+
+// ── FISH AUDIO TTS ──
+async function fishTTS(text) {
+  if (!apiKey) { showErr('Colle ta clé API Fish Audio et clique Sauver.'); return null; }
+  setLoad(true);
+  setSt('Génération voix IA…');
+  hideErr();
+
+  try {
+    const resp = await fetch('https://api.fish.audio/v1/tts', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: text,
+        reference_id: voiceId,
+        format: 'mp3',
+        mp3_bitrate: 128,
+        latency: 'normal',
+        normalize: true
+      })
+    });
+
+    if (!resp.ok) {
+      let msg = 'Erreur ' + resp.status;
+      try { const j = await resp.json(); msg = j.message || j.detail || msg; } catch(e){}
+      showErr('Fish Audio : ' + msg);
+      setLoad(false); setSt('Erreur API');
+      return null;
+    }
+
+    const blob = await resp.blob();
+    setLoad(false);
+    return URL.createObjectURL(blob);
+
+  } catch(e) {
+    showErr('Erreur réseau : ' + e.message);
+    setLoad(false); setSt('Erreur');
+    return null;
+  }
+}
+
+// ── PLAYBACK ──
+async function playText(text, chIdx, useCache) {
+  stopAll();
+  setIconLoad(true);
+  actCh = chIdx;
+  if (chIdx >= 0) hi(chIdx);
+
+  let url = (useCache && cachedUrl) ? cachedUrl : await fishTTS(text);
+  setIconLoad(false);
+  if (!url) { if(chIdx>=0) unhi(chIdx); return; }
+  if (useCache) cachedUrl = url;
+
+  audioEl = new Audio(url);
+  audioEl.playbackRate = rate;
+  audioEl.addEventListener('loadedmetadata', () => { document.getElementById('td').textContent = fmt(audioEl.duration); });
+  audioEl.addEventListener('timeupdate', () => {
+    if (!audioEl.duration) return;
+    setProg((audioEl.currentTime/audioEl.duration)*100);
+    document.getElementById('te').textContent = fmt(audioEl.currentTime);
+  });
+  audioEl.addEventListener('ended', () => {
+    playing=false; showPlay(); wave(false);
+    if(chIdx>=0) unhi(chIdx);
+    setProg(100); setSt('Lecture terminée');
+  });
+  audioEl.addEventListener('error', () => { playing=false; showPlay(); wave(false); showErr('Erreur lecture audio.'); });
+
+  audioEl.play();
+  playing=true; showPause(); wave(true); setSt('Lecture en cours…');
+}
+
+function stopAll() {
+  if(audioEl){ audioEl.pause(); audioEl.src=''; audioEl=null; }
+  playing=false; showPlay(); wave(false);
+  setProg(0);
+  document.getElementById('te').textContent='0:00';
+  document.getElementById('td').textContent='—';
+  if(actCh>=0){ unhi(actCh); actCh=-1; }
+  setSt('Prêt');
+}
+
+function togglePlay() {
+  if (!audioEl) { playText(FULL, -1, true); return; }
+  if (playing) { audioEl.pause(); playing=false; showPlay(); wave(false); setSt('En pause'); }
+  else { audioEl.play(); playing=true; showPause(); wave(true); setSt('Lecture en cours…'); }
+}
+
+// ── UI ──
+function fmt(s){ if(!s||isNaN(s))return '0:00'; const m=Math.floor(s/60),sc=Math.floor(s%60); return m+':'+(sc<10?'0':'')+sc; }
+function setProg(p){ document.getElementById('pf').style.width=Math.min(p,100)+'%'; }
+function setSt(t){ document.getElementById('st').textContent=t; }
+function setLoad(on){ document.getElementById('lbar').classList.toggle('on',on); document.getElementById('sdot').classList.toggle('busy',on); }
+function showErr(m){ const e=document.getElementById('err'); e.textContent=m; e.classList.add('on'); }
+function hideErr(){ document.getElementById('err').classList.remove('on'); }
+function showPlay(){ document.getElementById('iPl').style.display=''; document.getElementById('iPa').style.display='none'; document.getElementById('iLd').style.display='none'; }
+function showPause(){ document.getElementById('iPl').style.display='none'; document.getElementById('iPa').style.display=''; document.getElementById('iLd').style.display='none'; }
+function setIconLoad(on){ document.getElementById('iPl').style.display=on?'none':''; document.getElementById('iPa').style.display='none'; document.getElementById('iLd').style.display=on?'':'none'; }
+function wave(on){
+  const wf=document.getElementById('wf'),bars=wf.querySelectorAll('.wb');
+  if(on){wf.classList.add('on');waveAnim=setInterval(()=>bars.forEach(b=>{b.style.height=(Math.random()*28+4)+'px';}),90);}
+  else{wf.classList.remove('on');if(waveAnim){clearInterval(waveAnim);waveAnim=null;}bars.forEach(b=>{b.style.height=(Math.random()*8+3)+'px';});}
+}
+function hi(i){ document.querySelectorAll('.ch').forEach(c=>c.classList.remove('on')); const e=document.getElementById('c'+i); if(e){e.classList.add('on');e.scrollIntoView({behavior:'smooth',block:'nearest'});} }
+function unhi(i){ const e=document.getElementById('c'+i); if(e) e.classList.remove('on'); }
+
+// ── CHAPTERS ──
+function buildChs(){
+  const list=document.getElementById('chList');
+  CHAPTERS.forEach((ch,i)=>{
+    const d=document.createElement('div'); d.className='ch'; d.id='c'+i;
+    d.innerHTML=`<div class="ch-hd"><span class="ch-ic">${ch.icon}</span><span class="ch-ti">${ch.title}</span><span class="ch-bg ${ch.badge}">${ch.bl}</span></div><div class="ch-pv">${ch.pv}</div>`;
+    d.addEventListener('click',()=>playText(ch.tx,i,false));
+    list.appendChild(d);
+  });
+}
+
+// ── EVENTS ──
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const v=document.getElementById('apiKey').value.trim();
+  if(!v){ showErr('Clé vide.'); return; }
+  apiKey=v; localStorage.setItem('fa_key',v);
+  setSt('Clé sauvegardée ✓'); hideErr(); cachedUrl=null;
+});
+document.getElementById('voiceModel').addEventListener('change',function(){ voiceId=this.value; cachedUrl=null; });
+document.getElementById('testBtn').addEventListener('click',()=>playText("Bonjour. L'or oscille entre 4440 et 4490. Résistance principale à 4490. Attention au NFP à 14 heures 30.",-1,false));
+document.getElementById('bPl').addEventListener('click',togglePlay);
+document.getElementById('bSt').addEventListener('click',stopAll);
+document.getElementById('bRst').addEventListener('click',()=>{ cachedUrl=null; stopAll(); setTimeout(()=>playText(FULL,-1,true),80); });
+document.getElementById('bBk').addEventListener('click',()=>{ if(audioEl) audioEl.currentTime=Math.max(0,audioEl.currentTime-15); });
+document.getElementById('bFw').addEventListener('click',()=>{ if(audioEl) audioEl.currentTime=Math.min(audioEl.duration||0,audioEl.currentTime+15); });
+document.getElementById('pt').addEventListener('click',function(e){ if(!audioEl||!audioEl.duration)return; audioEl.currentTime=(e.clientX-this.getBoundingClientRect().left)/this.offsetWidth*audioEl.duration; });
+document.querySelectorAll('.sp').forEach(b=>{ b.addEventListener('click',function(){ document.querySelectorAll('.sp').forEach(x=>x.classList.remove('on')); this.classList.add('on'); rate=parseFloat(this.dataset.r); if(audioEl) audioEl.playbackRate=rate; }); });
+document.getElementById('rbtn').addEventListener('click',()=>{ cachedUrl=null; setSt('Brief actualisé · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})); });
+
+// ── INIT ──
+document.getElementById('dc').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+const saved=localStorage.getItem('fa_key'); if(saved){ apiKey=saved; document.getElementById('apiKey').value=saved; setSt('Clé chargée · Prêt'); }
+const wf=document.getElementById('wf'); for(let i=0;i<46;i++){ const b=document.createElement('div'); b.className='wb'; b.style.height=(Math.random()*10+3)+'px'; wf.appendChild(b); }
+buildChs();
+setInterval(()=>{ const h=new Date().getHours(); if(h>=6&&h<=21){ cachedUrl=null; setSt('Mis à jour · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})); }},600000);
+</script>
+</body>
+</html>
